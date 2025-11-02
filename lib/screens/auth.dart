@@ -10,7 +10,24 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
+  // This will ensure that all inputs are saved
+  final _form = GlobalKey<FormState>();
+
   bool _isLogin = true;
+  String _enteredEmail = '';
+  String _enteredPassword = '';
+
+  // Trigger validators and make sure all inputs saved
+  void _submit() {
+    final bool isValid = _form.currentState!.validate();
+
+    if (isValid) {
+      // Triggers a special function that can be assigned to all text form fields.
+      _form.currentState!.save();
+      print(_enteredEmail);
+      print(_enteredPassword);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +54,8 @@ class _AuthScreenState extends State<AuthScreen> {
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Form(
+                      // This gives us access to the form
+                      key: _form,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -47,17 +66,44 @@ class _AuthScreenState extends State<AuthScreen> {
                             keyboardType: TextInputType.emailAddress,
                             autocorrect: false,
                             textCapitalization: TextCapitalization.none,
+                            // value is the entered value from the form field
+                            validator: (value) {
+                              // This statement returns an error message (string) if value is invalid
+                              if (value == null ||
+                                  value.trim().isEmpty ||
+                                  !value.contains('@')) {
+                                return 'Please enter a valid email address.';
+                              }
+
+                              // If the entered value is valid, return null
+                              return null;
+                            },
+                            onSaved: (value) {
+                              _enteredEmail = value!;
+                            },
                           ),
                           TextFormField(
                             decoration: const InputDecoration(
                               labelText: 'Password',
                             ),
                             obscureText: true,
+                            validator: (value) {
+                              // This statement returns an error message (string) if value is invalid
+                              if (value == null || value.trim().length < 6) {
+                                return 'Password must be at least 6 characters long.';
+                              }
+
+                              // If the entered value is valid, return null
+                              return null;
+                            },
+                            onSaved: (value) {
+                              _enteredPassword = value!;
+                            },
                           ),
                           const SizedBox(height: 12),
                           // This button will ensure all input values are collected then send them to firebase
                           ElevatedButton(
-                            onPressed: () {},
+                            onPressed: _submit,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Theme.of(
                                 context,
